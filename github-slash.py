@@ -12,9 +12,10 @@ app.install(LoggingPlugin(app.config))
 app.config.load_config('./github-slash.conf')
 
 
+print(app.config.keys())
 @app.route('/<org>/<repo>')
 def slash(org, repo):
-    token = app.config.get('github-slash.{org}/{repo}'.format(org=org, repo=repo).lower())
+    token = app.config.get('{org}/{repo}.token'.format(org=org, repo=repo))
     if not token:
         logger.error("No configuration found for {org}/{repo}".format(
             org=org, repo=repo
@@ -33,8 +34,9 @@ def slash(org, repo):
         raise HTTPError(400)
 
     resp = {"response_type": "in_channel",
-            "username": "robot",
-            "icon_url": "https://www.mattermost.org/wp-content/uploads/2016/04/icon.png"}
+            "username": app.config.get('{org}/{repo}.username'.format(org=org, repo=repo), "GitHub"),
+            "icon_url": app.config.get('{org}/{repo}.icon_url'.format(org=org, repo=repo),
+                                       "https://octodex.github.com/images/original.png")}
 
     text = []
     for issue in issues:

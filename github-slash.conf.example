@@ -3,5 +3,7 @@ host = localhost
 address = 127.0.0.1
 port = 8081
 
-[github-slash]
-pieterlexis/mattermost-github-slash = 1234567890abc1234567890
+[pieterlexis/mattermost-github-slash]
+token = 1234567890abc1234567890
+username = MyBot
+icon_url = https://example.com/icon.png
