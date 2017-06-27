@@ -19,7 +19,7 @@ After that, run `pip install -r requirements.txt`, either in a virtualenv or on 
 Each section is the name of a repository and 3 settings are supported for each repository:
 
 * `token` (mandatory) -- The token (shared secret) as provided by Mattermost
-* `icon_url` -- The url for an icon to use as the avatar for this slash-command (![https://octodex.github.com/images/original.png](https://octodex.github.com/images/original.png)) by default
+* `icon_url` -- The url for an icon to use as the avatar for this slash-command ([`https://octodex.github.com/images/original.png`](https://octodex.github.com/images/original.png)) by default
 * `username` -- The username that is displayed for messages from this slash-command (default: GitHub)
 
 For an example configuration, see `github-slash.conf.example` in the repository root.
