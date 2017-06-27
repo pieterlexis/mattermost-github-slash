@@ -96,7 +96,7 @@ def slash(org, repo):
         resp.update({'text': '\n'.join(errors), 'response_type': 'ephemeral'})
         return resp
 
-    resp.update({'text': '\n\n'.join(text)})
+    resp.update({'text': '\n'.join(text)})
     return resp
 
 host = 'localhost'
