@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from bottle import Bottle, run, request, HTTPError, ConfigDict
+from bottle import Bottle, run, request, HTTPError
 from bottle_log import LoggingPlugin
 import requests
 import logging
@@ -82,15 +82,15 @@ def slash(org, repo):
                 issuestate += 'unable to fetch CI status'
                 logger.warning('Could not get CI information: {e}'.format(e=e))
 
-        text.append('[{issuetype} #{issue}]({issueurl}) [{issueauthor}]({issueauthorurl}) ({issuestate}): {issuetitle}'.format(
-            issuetype=issuetype,
-            issue=issue,
-            issueurl=res.get('html_url'),
-            issueauthor=res.get('user').get('login'),
-            issueauthorurl=res.get('user').get('html_url'),
-            issuestate=issuestate,
-            issuetitle=res.get('title')
-        ))
+        text.append(" * [{issuetype} #{issue}]({issueurl}) [{issueauthor}]({issueauthorurl}) "
+                    "({issuestate}): {issuetitle}".format(
+                        issuetype=issuetype,
+                        issue=issue,
+                        issueurl=res.get('html_url'),
+                        issueauthor=res.get('user').get('login'),
+                        issueauthorurl=res.get('user').get('html_url'),
+                        issuestate=issuestate,
+                        issuetitle=res.get('title')))
 
     if errors:
         resp.update({'text': '\n'.join(errors), 'response_type': 'ephemeral'})
@@ -98,6 +98,7 @@ def slash(org, repo):
 
     resp.update({'text': '\n'.join(text)})
     return resp
+
 
 host = 'localhost'
 address = '127.0.0.1'
