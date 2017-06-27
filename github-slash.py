@@ -20,19 +20,22 @@ def slash(org, repo):
         ))
         raise HTTPError(400)
 
-    if request.query.token != token:
+    if request.params.token != token:
         logger.error("Token in request incorrect for {org}/{repo}".format(
             org=org, repo=repo
         ))
         raise HTTPError(400)
 
-    issues = [issue.lstrip('#') for issue in request.query.text.split(' ')]
+    issues = [issue.lstrip('#') for issue in request.params.text.split(' ')]
 
     if not issues:
         raise HTTPError(400)
 
-    resp = []
+    resp = {"response_type": "in_channel",
+            "username": "robot",
+            "icon_url": "https://www.mattermost.org/wp-content/uploads/2016/04/icon.png"}
 
+    text = []
     for issue in issues:
         issuetype = "Issue"
         try:
@@ -70,7 +73,7 @@ def slash(org, repo):
                 issuestate += 'unable to fetch CI status'
                 logger.warning('Could not get CI information: {e}'.format(e=e))
 
-        resp.append('[{issuetype} #{issue}]({issueurl}) [{issueauthor}]({issueauthorurl}) ({issuestate}): {issuetitle}'.format(
+        text.append('[{issuetype} #{issue}]({issueurl}) [{issueauthor}]({issueauthorurl}) ({issuestate}): {issuetitle}'.format(
             issuetype=issuetype,
             issue=issue,
             issueurl=res.get('html_url'),
@@ -80,7 +83,9 @@ def slash(org, repo):
             issuetitle=res.get('title')
         ))
 
-    return '\n\n'.join(resp)
+    resp.update({'text': '\n\n'.join(text)})
+    return resp
+
 
 
 run(app, host='localhost', port=8080)
