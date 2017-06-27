@@ -11,7 +11,10 @@ app = Bottle()
 
 
 @app.route('/<org>/<repo>')
-def slash(org, repo):
+def slash(logger, org, repo):
+    logger.debug("Got a request for {org}/{repo} with the following data: {data}".format(
+        org=org, repo=repo, data={k: request.params.get(k) for k in request.params.keys()}
+    ))
     token = app.config.get('{org}/{repo}.token'.format(org=org, repo=repo))
     if not token:
         logger.error("No configuration found for {org}/{repo}".format(
@@ -46,11 +49,14 @@ def slash(org, repo):
 
         issuetype = "Issue"
         try:
-            res = requests.get('https://api.github.com/repos/{org}/{repo}/issues/{num}'.format(
+            url = 'https://api.github.com/repos/{org}/{repo}/issues/{num}'.format(
                 org=org,
                 repo=repo,
-                num=issue))
+                num=issue)
+            logger.debug('Getting the following url: {url}'.format(url=url))
+            res = requests.get(url)
             res.raise_for_status()
+            logger.debug('Got response: {data}'.format(data=res.json()))
         except requests.exceptions.HTTPError as e:
             errors.append('Unknown Issue number: {issue}'.format(issue=issue))
             logging.error('Got error from upstream: {e}'.format(e=e))
@@ -60,7 +66,11 @@ def slash(org, repo):
         if res.get('pull_request'):
             issuetype = "Pull Request"
             try:
-                res = requests.get(res.get('pull_request').get('url'))
+                url = res.get('pull_request').get('url')
+                logger.debug("Issue is a Pull Request, getting {url}".format(url=url))
+                res = requests.get(url)
+                res.raise_for_status()
+                logger.debug('Got response: {data}'.format(data=res.json()))
             except requests.exceptions.HTTPError as e:
                 errors.append('Unable to get PR information for {issue}'.format(issue=issue))
                 logging.error('Got error from upstream: {e}'.format(e=e))
@@ -70,8 +80,11 @@ def slash(org, repo):
         issuestate = res['state']
         if issuetype == 'Pull Request' and issuestate == 'open':
             try:
-                ci_status = requests.get(res.get('_links').get('statuses').get('href'))
+                url = res.get('_links').get('statuses').get('href')
+                logger.debug("Pull Request is open, getting extra data from {url}".format(url=url))
+                ci_status = requests.get(url)
                 ci_status = ci_status.json()[0]
+                logger.debug('Got response: {data}'.format(data=ci_status.json()))
                 issuestate += ', {mergable}mergable, Travis: {ci}'.format(
                     mergable='' if res.get('mergeable') else 'not ',
                     ci=ci_status.get('state')
@@ -92,9 +105,11 @@ def slash(org, repo):
 
     if errors:
         resp.update({'text': '\n'.join(errors), 'response_type': 'ephemeral'})
+        logger.info("Had errors, sending response: {data}".format(data=resp))
         return resp
 
     resp.update({'text': '\n'.join(text)})
+    logger.info("Done! Sending response: {data}".format(data=resp))
     return resp
 
 
@@ -110,12 +125,13 @@ argparser.add_argument('--verbose', '-v', action='count', help='Give more output
 
 args = argparser.parse_args()
 
-logger = logging.getLogger()
-
-logger.setLevel(logging.WARNING - (10 * min(args.verbose, 2)))
+if args.verbose == 1:
+    app.config['logging.level'] = 'info'
+if args.verbose > 1:
+    app.config['logging.level'] = 'debug'
 
 if not os.path.isfile(args.config):
-    logger.error('File does not exist: {fname}'.format(fname=args.config))
+    logging.error('File does not exist: {fname}'.format(fname=args.config))
     sys.exit(1)
 
 app.install(LoggingPlugin(app.config))
