@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 from bottle import Bottle, run, request, HTTPError
 from bottle_log import LoggingPlugin
+import os
+import sys
 import requests
 import logging
-
-logger = logging.getLogger()
+import argparse
 
 app = Bottle()
-app.install(LoggingPlugin(app.config))
-
-app.config.load_config('./github-slash.conf')
 
 
 @app.route('/<org>/<repo>')
@@ -100,13 +98,27 @@ def slash(org, repo):
     return resp
 
 
-host = 'localhost'
-address = '127.0.0.1'
-port = 8081
+argparser = argparse.ArgumentParser(prog='github-slash.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-if app.config.get('server'):
-    host = app.config.get('server.host', 'localhost')
-    address = app.config.get('server.address', '127.0.0.1')
-    port = app.config.get('server.port', 8081)
+argparser.add_argument('--config', '-c', action='store', metavar='CONFIGFILE', default='./github-slash.conf',
+                       help='Configuration file to use.')
+argparser.add_argument('--port', '-p', action='store', type=int, metavar='PORT', default=8080,
+                       help='Port of listen on.')
+argparser.add_argument('--address', '-a', action='store', metavar='ADDRESS', default='localhost',
+                       help='IP address or hostname to listen on.')
+argparser.add_argument('--verbose', '-v', action='count', help='Give more output', default=0)
 
-run(app, host=host, port=port, address=address)
+args = argparser.parse_args()
+
+logger = logging.getLogger()
+
+logger.setLevel(logging.WARNING - (10 * min(args.verbose, 2)))
+
+if not os.path.isfile(args.config):
+    logger.error('File does not exist: {fname}'.format(fname=args.config))
+    sys.exit(1)
+
+app.install(LoggingPlugin(app.config))
+app.config.load_config(args.config)
+
+run(app, host=args.address, port=args.port)
