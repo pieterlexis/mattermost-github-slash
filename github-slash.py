@@ -45,7 +45,7 @@ def slash(org, repo):
                 num=issue))
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            resp.append('Unknown Issue number: {issue}'.format(issue=issue))
+            text.append('Unknown Issue number: {issue}'.format(issue=issue))
             logging.error('Got error from upstream: {e}'.format(e=e))
             continue
         res = res.json()
@@ -55,7 +55,7 @@ def slash(org, repo):
             try:
                 res = requests.get(res.get('pull_request').get('url'))
             except requests.exceptions.HTTPError as e:
-                resp.append('Unable to get PR information for {issue}'.format(issue=issue))
+                text.append('Unable to get PR information for {issue}'.format(issue=issue))
                 logging.error('Got error from upstream: {e}'.format(e=e))
                 continue
             res = res.json()
