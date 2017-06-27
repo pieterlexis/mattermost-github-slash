@@ -12,7 +12,6 @@ app.install(LoggingPlugin(app.config))
 app.config.load_config('./github-slash.conf')
 
 
-print(app.config.keys())
 @app.route('/<org>/<repo>')
 def slash(org, repo):
     token = app.config.get('{org}/{repo}.token'.format(org=org, repo=repo))
