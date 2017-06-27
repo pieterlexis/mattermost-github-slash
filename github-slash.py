@@ -40,6 +40,12 @@ def slash(org, repo):
     text = []
     errors = []
     for issue in issues:
+        try:
+            int(issue)
+        except ValueError:
+            errors.append('{issue} is not a valid issue number'.format(issue=issue))
+            continue
+
         issuetype = "Issue"
         try:
             res = requests.get('https://api.github.com/repos/{org}/{repo}/issues/{num}'.format(
