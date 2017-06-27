@@ -1,6 +1,6 @@
 # `githib-slash` -- A Mattermost slash-command receiver for GitHub issues
 
-This program can be used as a target for [Mattermost slash-commands](https://docs.mattermost.com/developer/slash-commands.html).
+`github-slash` is a Python 3 program that is a target for [Mattermost slash-commands](https://docs.mattermost.com/developer/slash-commands.html).
 It accepts the slash-command data over both POST and GET on the `/organisation/repository` path and returns some information about the requested issues.
 
 ## Installing
@@ -10,6 +10,8 @@ At the moment, `github-slash` can be installed with a simple
 ```bash
 git clone https://github.com/pieterlexis/mattermost-github-slash
 ```
+
+After that, run `pip install -r requirements.txt`, either in a virtualenv or on the system.
 
 ## Configuring
 
