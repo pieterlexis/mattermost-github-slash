@@ -38,6 +38,7 @@ def slash(org, repo):
                                        "https://octodex.github.com/images/original.png")}
 
     text = []
+    errors = []
     for issue in issues:
         issuetype = "Issue"
         try:
@@ -47,7 +48,7 @@ def slash(org, repo):
                 num=issue))
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            text.append('Unknown Issue number: {issue}'.format(issue=issue))
+            errors.append('Unknown Issue number: {issue}'.format(issue=issue))
             logging.error('Got error from upstream: {e}'.format(e=e))
             continue
         res = res.json()
@@ -57,7 +58,7 @@ def slash(org, repo):
             try:
                 res = requests.get(res.get('pull_request').get('url'))
             except requests.exceptions.HTTPError as e:
-                text.append('Unable to get PR information for {issue}'.format(issue=issue))
+                errors.append('Unable to get PR information for {issue}'.format(issue=issue))
                 logging.error('Got error from upstream: {e}'.format(e=e))
                 continue
             res = res.json()
@@ -84,6 +85,10 @@ def slash(org, repo):
             issuestate=issuestate,
             issuetitle=res.get('title')
         ))
+
+    if errors:
+        resp.update({'text': '\n'.join(errors), 'response_type': 'ephemeral'})
+        return resp
 
     resp.update({'text': '\n\n'.join(text)})
     return resp
