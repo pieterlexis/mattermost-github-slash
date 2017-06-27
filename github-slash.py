@@ -7,8 +7,9 @@ import logging
 logger = logging.getLogger()
 
 app = Bottle()
-app.config.load_config('./github-slash.conf')
 app.install(LoggingPlugin(app.config))
+
+app.config.load_config('./github-slash.conf')
 
 
 @app.route('/<org>/<repo>')
@@ -86,6 +87,13 @@ def slash(org, repo):
     resp.update({'text': '\n\n'.join(text)})
     return resp
 
+host = 'localhost'
+address = '127.0.0.1'
+port = 8081
 
+if app.config.get('server'):
+    host = app.config.get('server.host', 'localhost')
+    address = app.config.get('server.address', '127.0.0.1')
+    port = app.config.get('server.port', 8081)
 
-run(app, host='localhost', port=8080)
+run(app, host=host, port=port, address=address)

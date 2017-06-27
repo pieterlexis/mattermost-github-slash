@@ -1,2 +1,7 @@
+[server]
+host = localhost
+address = 127.0.0.1
+port = 8081
+
 [github-slash]
 pieterlexis/mattermost-github-slash = 1234567890abc1234567890
